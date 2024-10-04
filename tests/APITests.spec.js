@@ -42,7 +42,7 @@ test.beforeEach(async ({ playwright }) => {
     baseURL: 'https://qacandidatetest.ensek.io',
     extraHTTPHeaders: {
       'accept': 'application/json',
-      'Authorization': `Bearer ${authToken}`, // Use the fresh token dynamically
+      'Authorization': `Bearer ${authToken}`, // Use the fresh token dynamically for each run
     },
   });
 });
@@ -156,3 +156,19 @@ test('Error handling - Invalid fuel type', async () => {
     const response = await apiContext.put('/ENSEK/buy/999/100'); // Invalid fuelId
     expect(response.status()).toBe(400);  // Check if a proper error is returned
 });
+
+// Test to verify the correct message when trying to purchase unavailable fuel (Nuclear)
+test('Verify validation message when purchasing unavailable fuel(Nuclear)', async () => {
+    // Try to buy 2 units of Nuclear fuel (which is unavailable)
+    const response = await apiContext.put('/ENSEK/buy/2/2');
+  
+    // Verify the response status is 200 (successful request)
+    expect(response.status()).toBe(200);
+  
+    // Extract and verify the response message
+    const responseBody = await response.json();
+    console.log('Purchase Response:', responseBody);
+  
+    // Assert that the message matches the expected message
+    expect(responseBody.message).toBe('There is no nuclear fuel to purchase!');
+  });
